@@ -163,7 +163,7 @@ docker-compose --version
 
 ```bash
 git clone https://github.com/46-45/healthcare-scheduling-system.git
-cd healthcare-scheduling
+cd healthcare-scheduling-system
 ```
 
 ### 2. Setup Environment Variables
@@ -938,7 +938,7 @@ healthcare-scheduling/
 1. Clone the repository
    ```bash
    git clone https://github.com/46-45/healthcare-scheduling-system.git
-   cd healthcare-scheduling
+   cd healthcare-scheduling-system
    ```
 
 2. Configure environment variables
