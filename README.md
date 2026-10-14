@@ -341,6 +341,66 @@ docker-compose up -d     # Start fresh
 
 ---
 
+## Testing the Application
+
+### Import Postman Collection
+
+The easiest way to test all endpoints is using the included Postman collection:
+
+1. Open Postman
+2. Click **Import**
+3. Select `Healthcare-Scheduling.postman_collection.json`
+4. The collection includes 21 pre-configured requests
+
+**Testing Flow:**
+1. Run **Register User** (Auth Service)
+2. Run **Login** (Auth Service) - saves access token automatically
+3. Run **Create Customer** (Schedule Service) - saves customer ID
+4. Run **Create Doctor** (Schedule Service) - saves doctor ID
+5. Run **Create Schedule** (Schedule Service)
+6. Check email in Mailpit: http://localhost:8025
+
+### GraphQL Playground
+
+You can also test directly in the browser:
+
+**Auth Service:**
+```
+http://localhost:3001/graphql
+```
+
+**Schedule Service:**
+```
+http://localhost:3002/graphql
+```
+
+**Features:**
+- Interactive query editor
+- Auto-complete (Ctrl+Space)
+- Full schema documentation (DOCS tab)
+- Query variables support
+- HTTP headers support
+
+### Health Check Endpoints
+
+```bash
+# Auth Service
+curl http://localhost:3001/health
+
+# Schedule Service
+curl http://localhost:3002/health
+```
+
+### Mailpit Web UI (Email Testing)
+
+```
+http://localhost:8025
+```
+
+View all emails sent by the system (schedule creation/cancellation notifications).
+
+---
+
 ## Testing
 
 ### Run Unit Tests
@@ -375,59 +435,6 @@ open auth-service/coverage/index.html
 
 # Schedule service
 open schedule-service/coverage/index.html
-```
-
----
-
-## API Documentation
-
-### GraphQL Playground
-
-#### Auth Service
-```
-http://localhost:3001/graphql
-```
-
-#### Schedule Service
-```
-http://localhost:3002/graphql
-```
-
-**Features:**
-- Interactive query editor
-- Auto-complete (Ctrl+Space)
-- Full schema documentation (DOCS tab)
-- Query variables support
-- HTTP headers support
-
-### Postman Collection
-
-Import the Postman collection for quick testing:
-
-```
-File: Healthcare-Scheduling.postman_collection.json
-```
-
-**Import Steps:**
-1. Open Postman
-2. Click **Import**
-3. Select `Healthcare-Scheduling.postman_collection.json`
-4. Collection includes 21 pre-configured requests
-
-### Health Check Endpoints
-
-```bash
-# Auth Service
-curl http://localhost:3001/health
-
-# Schedule Service
-curl http://localhost:3002/health
-```
-
-### Mailpit Web UI (Email Testing)
-
-```
-http://localhost:8025
 ```
 
 ---
