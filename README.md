@@ -162,7 +162,7 @@ docker-compose --version
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/46-45/healthcare-scheduling-system.git
 cd healthcare-scheduling
 ```
 
@@ -937,7 +937,7 @@ healthcare-scheduling/
 
 1. Clone the repository
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/46-45/healthcare-scheduling-system.git
    cd healthcare-scheduling
    ```
 
