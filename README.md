@@ -282,9 +282,7 @@ NODE_ENV=development
 
 ## Running the Application
 
-### Option 1: Docker
-
-#### Start All Services
+### Start All Services
 
 ```bash
 docker-compose up -d
@@ -298,7 +296,9 @@ This will start:
 - Schedule Service (port 3002)
 - Notification Service (background worker)
 
-#### Check Container Status
+**Note:** Database migrations run automatically when containers start.
+
+### Check Container Status
 
 ```bash
 docker-compose ps
@@ -315,7 +315,7 @@ healthcare-scheduling-schedule-service-1      Up (healthy)
 healthcare-scheduling-notification-service-1  Up
 ```
 
-#### View Logs
+### View Logs
 
 ```bash
 # All services
@@ -326,62 +326,17 @@ docker-compose logs -f auth-service
 docker-compose logs -f schedule-service
 ```
 
-#### Stop Services
+### Stop Services
 
 ```bash
 docker-compose down
 ```
 
-#### Reset Database & Start Fresh
+### Reset Database & Start Fresh
 
 ```bash
 docker-compose down -v  # Remove volumes
 docker-compose up -d     # Start fresh
-```
-
----
-
-### Option 2: Local Development
-
-#### 1. Start Infrastructure Services
-
-```bash
-docker-compose up -d postgres redis mailpit
-```
-
-#### 2. Run Database Migrations
-
-```bash
-# Auth service
-cd auth-service
-npx prisma migrate deploy
-npx prisma generate
-
-# Schedule service
-cd ../schedule-service
-npx prisma migrate deploy
-npx prisma generate
-```
-
-#### 3. Start Auth Service
-
-```bash
-cd auth-service
-npm run start:dev
-```
-
-#### 4. Start Schedule Service (in another terminal)
-
-```bash
-cd schedule-service
-npm run start:dev
-```
-
-#### 5. Start Notification Worker (optional, in another terminal)
-
-```bash
-cd schedule-service
-npm run start:worker
 ```
 
 ---
