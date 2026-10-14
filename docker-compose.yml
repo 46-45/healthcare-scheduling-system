@@ -1,0 +1,136 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: healthcare-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-healthcare}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - healthcare-network
+
+  # Redis (P2 - for caching and queue)
+  redis:
+    image: redis:7-alpine
+    container_name: healthcare-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - healthcare-network
+    volumes:
+      - redis_data:/data
+
+  # Mailpit SMTP Server (P2 - for email notifications)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: healthcare-mailpit
+    ports:
+      - "${SMTP_PORT:-1025}:1025"  # SMTP port
+      - "${MAILPIT_WEB_PORT:-8025}:8025"  # Web UI port
+    networks:
+      - healthcare-network
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: healthcare-auth-service
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-healthcare}?schema=auth_schema
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - healthcare-network
+
+  # Schedule Service
+  schedule-service:
+    build:
+      context: ./schedule-service
+      dockerfile: Dockerfile
+    container_name: healthcare-schedule-service
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-healthcare}?schema=schedule_schema
+      AUTH_SERVICE_URL: http://auth-service:3001
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@healthcare-scheduling.com}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Healthcare Scheduling System}
+      PORT: 3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - healthcare-network
+
+  # Notification Service Worker (P2 - processes email queue)
+  notification-service:
+    build:
+      context: ./schedule-service
+      dockerfile: Dockerfile
+    container_name: healthcare-notification-service
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-noreply@healthcare-scheduling.com}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Healthcare Scheduling System}
+    depends_on:
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    command: npm run start:worker
+    networks:
+      - healthcare-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  healthcare-network:
+    driver: bridge

@@ -1,0 +1,46 @@
+// This is your Prisma schema file for Schedule Service
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Customer model
+model Customer {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  schedules Schedule[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Doctor model
+model Doctor {
+  id        String     @id @default(uuid())
+  name      String
+  schedules Schedule[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Schedule model with conflict prevention
+model Schedule {
+  id          String   @id @default(uuid())
+  objective   String
+  customerId  String
+  doctorId    String
+  scheduledAt DateTime // Stored in UTC
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+
+  @@unique([doctorId, scheduledAt]) // Prevent schedule conflicts at database level
+}
