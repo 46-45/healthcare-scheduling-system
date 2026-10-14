@@ -175,13 +175,13 @@ Copy example environment files and configure them:
 cp .env.example .env
 
 # Auth service .env file
-cp auth-service/.env.example auth-service/.env
+cp auth-service\.env.example auth-service\.env
 
 # Schedule service .env file
-cp schedule-service/.env.example schedule-service/.env
+cp schedule-service\.env.example schedule-service\.env
 ```
 
-**Edit each `.env` file with your configuration** (see [Environment Variables](#environment-variables) section below)
+**Note:** For Docker deployment, the `.env.example` files already have correct values. You can use them as-is without modifications.
 
 ### 3. Install Dependencies (Optional - for local development)
 
@@ -944,9 +944,10 @@ healthcare-scheduling/
 2. Configure environment variables
    ```bash
    cp .env.example .env
-   cp auth-service/.env.example auth-service/.env
-   cp schedule-service/.env.example schedule-service/.env
+   cp auth-service\.env.example auth-service\.env
+   cp schedule-service\.env.example schedule-service\.env
    ```
+   **Note:** Default values in `.env.example` files work for Docker setup
 
 3. Start all services with Docker
    ```bash
